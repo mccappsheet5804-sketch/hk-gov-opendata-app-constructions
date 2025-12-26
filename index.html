@@ -1,0 +1,2420 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港政府工程項目查詢系統 - hk-gov-opendata-app-constructions</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c6c91, #2c3e50);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 i {
+            color: #ffcc00;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            max-width: 800px;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Main Accordion Styles */
+        .accordion-panel {
+            width: 400px;
+            background-color: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+            z-index: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .accordion-item {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+        }
+
+        .accordion-header {
+            background-color: #2c6c91;
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .accordion-header:hover {
+            background-color: #1a5c7a;
+        }
+
+        .accordion-header.active {
+            background-color: #2c3e50;
+        }
+
+        .accordion-content {
+            background-color: white;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .accordion-content.active {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Nested Accordion Styles */
+        .nested-accordion {
+            margin-top: 10px;
+        }
+
+        .nested-accordion-item {
+            margin-bottom: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .nested-accordion-header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .nested-accordion-header:hover {
+            background-color: #3a80d2;
+        }
+
+        .nested-accordion-header.active {
+            background-color: #2c6c91;
+        }
+
+        .nested-accordion-content {
+            background-color: #f8f9fa;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .nested-accordion-content.active {
+            padding: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Level 3 Nested Accordion */
+        .level3-accordion-item {
+            margin-bottom: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .level3-accordion-header {
+            background-color: #2c6c91;
+            color: white;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+        }
+
+        .level3-accordion-header:hover {
+            background-color: #1a5c7a;
+        }
+
+        .level3-accordion-header.active {
+            background-color: #2c3e50;
+        }
+
+        .level3-accordion-content {
+            background-color: #f0f7ff;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .level3-accordion-content.active {
+            padding: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Level 4 Nested Accordion */
+        .level4-accordion-item {
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .level4-accordion-header {
+            background-color: #1a5c7a;
+            color: white;
+            padding: 8px 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .level4-accordion-header:hover {
+            background-color: #0d4c6a;
+        }
+
+        .level4-accordion-header.active {
+            background-color: #2c3e50;
+        }
+
+        .level4-accordion-content {
+            background-color: #e8f4ff;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .level4-accordion-content.active {
+            padding: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        /* Project Items */
+        .project-item {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .project-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #4a90e2;
+        }
+
+        .project-item.active {
+            border-color: #ffcc00;
+            background-color: #fff9e6;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .project-details {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .project-detail-item {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .project-detail-item i {
+            color: #2c6c91;
+            margin-right: 8px;
+            margin-top: 3px;
+            width: 16px;
+        }
+
+        /* Control Groups */
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .btn {
+            background-color: #2c6c91;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: #1a5c7a;
+        }
+
+        .btn.active {
+            background-color: #2c3e50;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+        }
+
+        .btn-success:hover {
+            background-color: #219653;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2c6c91;
+            font-size: 0.9rem;
+        }
+
+        .info-box h4 {
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        /* Search Box */
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2c6c91;
+        }
+
+        /* Map Styles */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 6px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            border-top: 1px solid #4a6491;
+            z-index: 1000;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .footer-links a {
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #3498db;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .accordion-panel {
+                width: 100%;
+                height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .header h1 {
+                font-size: 1.3rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            .accordion-header {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+
+            .nested-accordion-header {
+                padding: 10px 12px;
+                font-size: 0.95rem;
+            }
+
+            .level3-accordion-header {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+
+            .level4-accordion-header {
+                padding: 6px 8px;
+                font-size: 0.85rem;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.95rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+            }
+        }
+
+        /* For very small screens like iPhone SE */
+        @media (max-width: 375px) {
+            .header {
+                padding: 12px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .header p {
+                font-size: 0.8rem;
+            }
+
+            .accordion {
+                padding: 10px;
+            }
+
+            .accordion-header {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            .accordion-content.active {
+                padding: 15px;
+            }
+
+            .nested-accordion-header {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+
+            .level3-accordion-header {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+
+            .level4-accordion-header {
+                padding: 5px 6px;
+                font-size: 0.75rem;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .footer {
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Stats Display */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 10px 0;
+            border-top: 1px dashed #ddd;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Toggle panel button for mobile */
+        .panel-toggle {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .panel-toggle {
+                display: block;
+            }
+
+            .accordion-panel.collapsed {
+                transform: translateY(-100%);
+                height: 0;
+                overflow: hidden;
+            }
+        }
+
+        /* Legend */
+        .legend {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2c6c91;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Coordinates display */
+        .coordinates {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            z-index: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Project Counter */
+        .project-counter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+
+        /* Filter controls */
+        .filter-controls {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Iframe container */
+        .iframe-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .status-completed {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .status-inprogress {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .status-planned {
+            background-color: #3498db;
+            color: white;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+
+        /* Data source active state */
+        .data-source-active .accordion-header {
+            background-color: #2c3e50;
+            border-left: 4px solid #ffcc00;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1><i class="fas fa-hard-hat"></i> 香港政府工程項目查詢系統</h1>
+        <p>hk-gov-opendata-app-constructions - 查詢全港各政府部門的工程項目資訊</p>
+    </div>
+
+    <div class="container">
+        <button class="panel-toggle" id="panelToggle" style="display:none">
+            <i class="fas fa-bars"></i> 控制面板
+        </button>
+
+        <div class="accordion-panel" id="accordionPanel">
+            <div class="accordion">
+                <!-- Waterworks Projects - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item data-source-active" id="waterworksSource">
+                    <div class="accordion-header active" id="headerWaterworks">
+                        <span><i class="fas fa-water"></i> （水務署）主要基建工程項目</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content active" id="contentWaterworks">
+                        <div class="search-box">
+                            <input type="text" id="searchWaterworks" class="search-input" placeholder="搜尋項目名稱或概述...">
+                        </div>
+                        <div class="info-box">
+                            <h4><i class="fas fa-info-circle"></i> 使用說明</h4>
+                            <p>1. 項目按進度(PROGRESS)分組顯示</p>
+                            <p>2. 點擊項目查看詳細資訊和地圖位置</p>
+                            <p>3. 使用搜尋框查找特定項目</p>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="waterworksTotal">0</div>
+                                <div class="stat-label">總項目數</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="waterworksGroups">0</div>
+                                <div class="stat-label">進度組別</div>
+                            </div>
+                        </div>
+                        <div id="waterworksList" class="nested-accordion">
+                            <!-- Waterworks projects will be loaded here with nested accordion structure -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ArchSD - Capital Projects Under Planning - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item" id="archsdPlanningSource">
+                    <div class="accordion-header" id="headerArchSDPlanning">
+                        <span><i class="fas fa-drafting-compass"></i> （建築署）規劃中 - 基本工程項目</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentArchSDPlanning">
+                        <div class="search-box">
+                            <input type="text" id="searchArchSDPlanning" class="search-input" placeholder="搜尋項目標題、聯絡人或項目編號...">
+                        </div>
+                        <div class="filter-controls">
+                            <label for="filterLocationPlanning">按地區篩選:</label>
+                            <select id="filterLocationPlanning" class="filter-select">
+                                <option value="">所有地區</option>
+                                <!-- Locations will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div id="archSDPlanningList" class="nested-accordion">
+                            <!-- ArchSD planning projects will be loaded here with nested accordion structure -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ArchSD - Capital Projects Under Construction - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item" id="archsdConstructionSource">
+                    <div class="accordion-header" id="headerArchSDConstruction">
+                        <span><i class="fas fa-hard-hat"></i> （建築署）興建中 - 基本工程項目</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentArchSDConstruction">
+                        <div class="search-box">
+                            <input type="text" id="searchArchSDConstruction" class="search-input" placeholder="搜尋項目標題、聯絡人、合約或項目編號...">
+                        </div>
+                        <div class="filter-controls">
+                            <label for="filterLocationConstruction">按地區篩選:</label>
+                            <select id="filterLocationConstruction" class="filter-select">
+                                <option value="">所有地區</option>
+                                <!-- Locations will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div id="archSDConstructionList" class="nested-accordion">
+                            <!-- ArchSD construction projects will be loaded here with nested accordion structure -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transport Department - Roadworks Location - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item" id="roadworksSource">
+                    <div class="accordion-header" id="headerRoadworks">
+                        <span><i class="fas fa-road"></i> （運輸署）道路工程位置</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentRoadworks">
+                        <div class="info-box">
+                            <h4><i class="fas fa-info-circle"></i> 道路工程位置數據</h4>
+                            <p id="roadworksStatus">正在載入道路工程數據...</p>
+                        </div>
+                        <div id="roadworksList">
+                            <!-- Roadworks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transport Department - Daytime Ban Routes - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item" id="daytimeBanSource">
+                    <div class="accordion-header" id="headerDaytimeBan">
+                        <span><i class="fas fa-ban"></i> （運輸署）道路工程的日間禁制路線位置</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentDaytimeBan">
+                        <div class="info-box">
+                            <h4><i class="fas fa-info-circle"></i> 日間禁制路線位置</h4>
+                            <p>此數據來源需通過政府地理空間信息門戶查看</p>
+                        </div>
+                        <div class="iframe-container">
+                            <a src="https://portal.csdi.gov.hk/geoportal/#mapPanel">CSDI 地圖</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buildings Department - Unauthorised Building Work Orders - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item" id="unauthorisedWorkSource">
+                    <div class="accordion-header" id="headerUnauthorisedWork">
+                        <span><i class="fas fa-exclamation-triangle"></i> （屋宇署）違例建築工程命令</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentUnauthorisedWork">
+                        <div class="info-box">
+                            <h4><i class="fas fa-info-circle"></i> 違例建築工程命令數據</h4>
+                            <p>詳細數據規格和存取方式將稍後公布...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CEDD - Major Projects - KEEP THIS ALWAYS VISIBLE -->
+                <div class="accordion-item" id="ceddSource">
+                    <div class="accordion-header" id="headerCEDD">
+                        <span><i class="fas fa-mountain"></i> （土木工程拓展署）主要工程</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentCEDD">
+                        <div class="search-box">
+                            <input type="text" id="searchCEDD" class="search-input" placeholder="搜尋工程標題...">
+                        </div>
+                        <div class="filter-controls">
+                            <label for="filterCategoryCEDD">按狀態篩選:</label>
+                            <select id="filterCategoryCEDD" class="filter-select">
+                                <option value="">所有狀態</option>
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div id="ceddList" class="nested-accordion">
+                            <!-- CEDD projects will be loaded here with nested accordion structure -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Settings -->
+                <div class="accordion-item">
+                    <div class="accordion-header" id="headerSettings">
+                        <span><i class="fas fa-cog"></i> 地圖設定</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content" id="contentSettings">
+                        <div class="control-group">
+                            <label><i class="fas fa-map"></i> 底圖樣式</label>
+                            <select id="baseMapSelect" class="btn" style="padding: 10px;">
+                                <option value="OpenStreetMap">OpenStreetMap</option>
+                                <option value="地形圖">地形圖</option>
+                                <option value="衛星圖像">衛星圖像</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label><i class="fas fa-search"></i> 縮放級別</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button class="btn" id="zoomInBtn" style="width: auto; flex: 1;">
+                                    <i class="fas fa-search-plus"></i> 放大
+                                </button>
+                                <button class="btn" id="zoomOutBtn" style="width: auto; flex: 1;">
+                                    <i class="fas fa-search-minus"></i> 縮小
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label><i class="fas fa-location-arrow"></i> 重置視圖</label>
+                            <button class="btn" id="resetViewBtn">
+                                <i class="fas fa-globe-asia"></i> 重置至香港全境
+                            </button>
+                        </div>
+
+                        <div class="legend">
+                            <label><i class="fas fa-layer-group"></i> 圖例</label>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #3498db;"></div>
+                                <span>水務署工程</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                                <span>建築署工程</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #2ecc71;"></div>
+                                <span>道路工程</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #9b59b6;"></div>
+                                <span>土木工程拓展署工程</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>正在載入工程項目數據...</p>
+            </div>
+            <div class="coordinates" id="coordinatesDisplay" hidden>
+                經度: --, 緯度: --
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-copyright">
+                &copy; 2024 hk-gov-opendata-app-constructions<br />數據由香港特別行政區政府各部門提供
+            </div>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Initialize variables
+        let map;
+        let allLayers = {};
+        let selectedFeature = null;
+        let currentActiveSource = 'waterworks';
+        
+        // Data storage
+        let waterworksData = [];
+        let archSDPlanningData = [];
+        let archSDConstructionData = [];
+        let roadworksData = [];
+        let ceddData = [];
+        
+        // Event listener trackers to prevent duplicate binding
+        let eventListenersSetup = {
+            waterworks: false,
+            archsdPlanning: false,
+            archsdConstruction: false,
+            roadworks: false,
+            cedd: false
+        };
+
+        // Add base layers
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors'
+        });
+
+        const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        });
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+
+        // Base layers object
+        const baseLayers = {
+            "OpenStreetMap": osmLayer,
+            "地形圖": topoLayer,
+            "衛星圖像": satelliteLayer
+        };
+        var currentTileLayer = baseLayers["OpenStreetMap"];
+
+        // Data source configurations
+        const dataSources = {
+            waterworks: {
+                name: 'hk-gov-opendata-construction-mip',
+                displayName: '（水務署）主要基建工程項目',
+                url: 'https://portal.csdi.gov.hk/server/services/common/wsd_rcd_1696486647021_69503/MapServer/WFSServer?service=wfs&request=GetFeature&typenames=Major_Infrastructure_Projects&outputFormat=geojson',
+                layerName: 'waterworks',
+                showOnLoad: false,
+                geometryType: 'MultiPolygon',
+                color: '#3498db',
+                elementId: 'waterworksSource'
+            },
+            archsdPlanning: {
+                name: 'hk-gov-opendata-construction-cpup',
+                displayName: '（建築署）規劃中 - 基本工程項目',
+                url: 'https://portal.csdi.gov.hk/server/services/common/archsd_rcd_1637285145538_84229/MapServer/WFSServer?service=wfs&request=GetFeature&typenames=CapitalProjectUnderPlanning&outputFormat=geojson',
+                layerName: 'archsd_planning',
+                showOnLoad: true,
+                geometryType: 'Point',
+                color: '#e74c3c',
+                elementId: 'archsdPlanningSource'
+            },
+            archsdConstruction: {
+                name: 'hk-gov-opendata-construction-cpuc',
+                displayName: '（建築署）興建中 - 基本工程項目',
+                url: 'https://portal.csdi.gov.hk/server/services/common/archsd_rcd_1637294600558_18821/MapServer/WFSServer?service=wfs&request=GetFeature&typenames=CapitalProjetsUnderConstruction&outputFormat=geojson',
+                layerName: 'archsd_construction',
+                showOnLoad: true,
+                geometryType: 'Point',
+                color: '#e74c3c',
+                elementId: 'archsdConstructionSource'
+            },
+            roadworks: {
+                name: 'hk-gov-opendata-construction-roadworks-ipup',
+                displayName: '（運輸署）道路工程位置',
+                url: 'https://resource.data.one.gov.hk/td/roadworks-location/get_all_the_roadworks.geojson',
+                layerName: 'roadworks',
+                showOnLoad: true,
+                geometryType: 'Point',
+                color: '#2ecc71',
+                elementId: 'roadworksSource'
+            },
+            cedd: {
+                name: 'hk-gov-opendata-construction-mp',
+                displayName: '（土木工程拓展署）主要工程',
+                url: 'https://portal.csdi.gov.hk/server/services/common/cedd_rcd_1696843963291_60361/MapServer/WFSServer?service=wfs&request=GetFeature&typenames=geotagging&outputFormat=geojson',
+                layerName: 'cedd',
+                showOnLoad: true,
+                geometryType: 'Point',
+                color: '#9b59b6',
+                elementId: 'ceddSource'
+            }
+        };
+
+        // Initialize map when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            initMap();
+            setupAccordion();
+            setupEventListeners();
+            loadAllDataSources();
+            
+            // Handle mobile panel toggle
+            const panelToggle = document.getElementById('panelToggle');
+            const accordionPanel = document.getElementById('accordionPanel');
+
+            panelToggle.addEventListener('click', function () {
+                accordionPanel.classList.toggle('collapsed');
+                panelToggle.innerHTML = accordionPanel.classList.contains('collapsed')
+                    ? '<i class="fas fa-bars"></i> 顯示控制面板'
+                    : '<i class="fas fa-bars"></i> 隱藏控制面板';
+            });
+            
+            // Update coordinates on map move
+            map.on('mousemove', function(e) {
+                document.getElementById('coordinatesDisplay').textContent = 
+                    `經度: ${e.latlng.lng.toFixed(6)}, 緯度: ${e.latlng.lat.toFixed(6)}`;
+            });
+        });
+
+        // Initialize the map
+        function initMap() {
+            // Set initial view to Hong Kong
+            map = L.map('map', { zoomControl: false }).setView([22.3193, 114.1694], 11);
+
+            // Add default layer
+            currentTileLayer.addTo(map);
+            
+            // Initialize layer groups
+            for (const key in dataSources) {
+                allLayers[key] = L.layerGroup().addTo(map);
+            }
+        }
+
+        // Setup main accordion functionality - FIXED: Prevent duplicate event binding
+        function setupAccordion() {
+            // Use event delegation for accordion headers
+            document.addEventListener('click', function(e) {
+                const accordionHeader = e.target.closest('.accordion-header');
+                if (!accordionHeader) return;
+                
+                e.stopPropagation();
+                const content = accordionHeader.nextElementSibling;
+                const isActive = accordionHeader.classList.contains('active');
+
+                // Toggle current item
+                accordionHeader.classList.toggle('active');
+                content.classList.toggle('active');
+                
+                // Rotate icon
+                const icon = accordionHeader.querySelector('.fa-chevron-down');
+                if (isActive) {
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+
+                map.invalidateSize();
+            });
+        }
+
+        // Setup button event listeners
+        function setupEventListeners() {
+            // Map controls
+            document.getElementById('zoomInBtn').addEventListener('click', function () {
+                map.zoomIn();
+            });
+
+            document.getElementById('zoomOutBtn').addEventListener('click', function () {
+                map.zoomOut();
+            });
+
+            document.getElementById('resetViewBtn').addEventListener('click', function () {
+                map.setView([22.3193, 114.1694], 11);
+            });
+
+            // Base map selector
+            document.getElementById('baseMapSelect').addEventListener('change', function (e) {
+                // Remove current layer
+                map.removeLayer(currentTileLayer);
+
+                // Add new layer
+                currentTileLayer = baseLayers[e.target.value];
+                currentTileLayer.addTo(map);
+            });
+
+            // Search inputs - use event delegation to handle dynamic content
+            document.addEventListener('input', function(e) {
+                if (e.target.id === 'searchWaterworks') {
+                    filterWaterworksProjects(e.target.value);
+                } else if (e.target.id === 'searchArchSDPlanning') {
+                    filterArchSDProjects(e.target.value, 'planning');
+                } else if (e.target.id === 'searchArchSDConstruction') {
+                    filterArchSDProjects(e.target.value, 'construction');
+                } else if (e.target.id === 'searchCEDD') {
+                    filterCEDDProjects(e.target.value);
+                }
+            });
+
+            // Filter controls
+            document.getElementById('filterLocationPlanning').addEventListener('change', function (e) {
+                filterArchSDByLocation(e.target.value, 'planning');
+            });
+
+            document.getElementById('filterLocationConstruction').addEventListener('change', function (e) {
+                filterArchSDByLocation(e.target.value, 'construction');
+            });
+
+            document.getElementById('filterCategoryCEDD').addEventListener('change', function (e) {
+                filterCEDDByCategory(e.target.value);
+            });
+
+            // Click on data source headers to activate them
+            document.addEventListener('click', function(e) {
+                // Check if clicked on an accordion header of a data source
+                const accordionHeader = e.target.closest('.accordion-header');
+                if (!accordionHeader) return;
+                
+                // Find which data source was clicked
+                const accordionItem = accordionHeader.parentElement;
+                let sourceType = null;
+                
+                if (accordionItem.id === 'waterworksSource') sourceType = 'waterworks';
+                else if (accordionItem.id === 'archsdPlanningSource') sourceType = 'archsdPlanning';
+                else if (accordionItem.id === 'archsdConstructionSource') sourceType = 'archsdConstruction';
+                else if (accordionItem.id === 'roadworksSource') sourceType = 'roadworks';
+                else if (accordionItem.id === 'ceddSource') sourceType = 'cedd';
+                else if (accordionItem.id === 'daytimeBanSource') sourceType = 'daytimeBan';
+                else if (accordionItem.id === 'unauthorisedWorkSource') sourceType = 'unauthorisedWork';
+                
+                if (sourceType && sourceType !== 'daytimeBan' && sourceType !== 'unauthorisedWork') {
+                    // Activate this data source
+                    activateDataSource(sourceType);
+                }
+            });
+        }
+
+        // Activate a data source (mutually exclusive for map display)
+        function activateDataSource(sourceType) {
+            // Update UI: Remove active class from all data sources
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                item.classList.remove('data-source-active');
+            });
+            
+            // Add active class to clicked data source
+            const sourceElement = document.getElementById(dataSources[sourceType].elementId);
+            if (sourceElement) {
+                sourceElement.classList.add('data-source-active');
+            }
+            
+            // Update current active source
+            currentActiveSource = sourceType;
+            
+            // Clear all map features
+            clearAllMapFeatures();
+            
+            // Show features for active data source
+            showActiveDataSourceFeatures();
+        }
+
+        // Clear all map features
+        function clearAllMapFeatures() {
+            for (const key in allLayers) {
+                allLayers[key].clearLayers();
+            }
+            if (selectedFeature) {
+                map.removeLayer(selectedFeature);
+                selectedFeature = null;
+            }
+        }
+
+        // Show features for active data source
+        function showActiveDataSourceFeatures() {
+            let data, dataType, color;
+            
+            switch(currentActiveSource) {
+                case 'waterworks':
+                    data = waterworksData;
+                    dataType = 'waterworks';
+                    color = dataSources.waterworks.color;
+                    break;
+                case 'archsdPlanning':
+                    data = archSDPlanningData;
+                    dataType = 'archsdPlanning';
+                    color = dataSources.archsdPlanning.color;
+                    break;
+                case 'archsdConstruction':
+                    data = archSDConstructionData;
+                    dataType = 'archsdConstruction';
+                    color = dataSources.archsdConstruction.color;
+                    break;
+                case 'roadworks':
+                    data = roadworksData;
+                    dataType = 'roadworks';
+                    color = dataSources.roadworks.color;
+                    break;
+                case 'cedd':
+                    data = ceddData;
+                    dataType = 'cedd';
+                    color = dataSources.cedd.color;
+                    break;
+                default:
+                    return;
+            }
+            
+            if (data && data.length > 0) {
+                createMapFeatures(data, dataType, color);
+            }
+        }
+
+        // Load all data sources
+        async function loadAllDataSources() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block';
+
+            try {
+                // Load all data sources in parallel
+                await Promise.all([
+                    loadWaterworksData(),
+                    loadArchSDPlanningData(),
+                    loadArchSDConstructionData(),
+                    loadRoadworksData(),
+                    loadCEDDData()
+                ]);
+
+                console.log('All data sources loaded successfully');
+                
+                // Show features for waterworks data by default
+                showActiveDataSourceFeatures();
+                
+            } catch (error) {
+                console.error('Error loading data sources:', error);
+                showNotification('載入數據時發生錯誤，請稍後再試。', 'error');
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // Load Waterworks data
+        async function loadWaterworksData() {
+            try {
+                const response = await fetch(dataSources.waterworks.url);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                waterworksData = data.features || [];
+                
+                // Update stats
+                document.getElementById('waterworksTotal').textContent = waterworksData.length;
+                
+                // Group by PROGRESS for stats
+                const progressGroups = new Set();
+                waterworksData.forEach(f => progressGroups.add(f.properties.PROGRESS || '未分類'));
+                document.getElementById('waterworksGroups').textContent = progressGroups.size;
+                
+                // Render accordion list
+                renderWaterworksList();
+                
+            } catch (error) {
+                console.error('Error loading waterworks data:', error);
+                showNotification('無法載入水務署工程數據', 'error');
+            }
+        }
+
+        // Load ArchSD Planning data
+        async function loadArchSDPlanningData() {
+            try {
+                const response = await fetch(dataSources.archsdPlanning.url);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                archSDPlanningData = data.features || [];
+                
+                // Extract unique locations for filter
+                const locations = [...new Set(archSDPlanningData
+                    .map(f => f.properties.locationCht)
+                    .filter(loc => loc && loc.trim() !== ''))].sort();
+                
+                // Populate location filter
+                const filterSelect = document.getElementById('filterLocationPlanning');
+                filterSelect.innerHTML = '<option value="">所有地區</option>';
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location;
+                    option.textContent = location;
+                    filterSelect.appendChild(option);
+                });
+                
+                // Render accordion list
+                renderArchSDList('planning');
+                
+            } catch (error) {
+                console.error('Error loading ArchSD planning data:', error);
+                showNotification('無法載入建築署規劃中工程數據', 'error');
+            }
+        }
+
+        // Load ArchSD Construction data
+        async function loadArchSDConstructionData() {
+            try {
+                const response = await fetch(dataSources.archsdConstruction.url);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                archSDConstructionData = data.features || [];
+                
+                // Extract unique locations for filter
+                const locations = [...new Set(archSDConstructionData
+                    .map(f => f.properties.locationCht)
+                    .filter(loc => loc && loc.trim() !== ''))].sort();
+                
+                // Populate location filter
+                const filterSelect = document.getElementById('filterLocationConstruction');
+                filterSelect.innerHTML = '<option value="">所有地區</option>';
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location;
+                    option.textContent = location;
+                    filterSelect.appendChild(option);
+                });
+                
+                // Render accordion list
+                renderArchSDList('construction');
+                
+            } catch (error) {
+                console.error('Error loading ArchSD construction data:', error);
+                showNotification('無法載入建築署興建中工程數據', 'error');
+            }
+        }
+
+        // Load Roadworks data
+        async function loadRoadworksData() {
+            try {
+                const response = await fetch(dataSources.roadworks.url);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                roadworksData = data.features || [];
+                
+                const statusElement = document.getElementById('roadworksStatus');
+                
+                if (roadworksData.length === 0) {
+                    statusElement.textContent = '尚未新增道路工程';
+                    statusElement.style.color = '#f39c12';
+                } else {
+                    statusElement.textContent = `已載入 ${roadworksData.length} 個道路工程位置`;
+                    statusElement.style.color = '#27ae60';
+                    
+                    // Show features on map if this is the active source
+                    if (currentActiveSource === 'roadworks') {
+                        createMapFeatures(roadworksData, 'roadworks', dataSources.roadworks.color);
+                    }
+                    
+                    document.getElementById('roadworksList').innerHTML = `
+                        <div class="info-box">
+                            <h4>道路工程位置數據</h4>
+                            <p>共 ${roadworksData.length} 個道路工程位置</p>
+                            <p>詳細列表功能將根據數據規格文檔實現</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading roadworks data:', error);
+                document.getElementById('roadworksStatus').textContent = '載入道路工程數據時發生錯誤';
+                document.getElementById('roadworksStatus').style.color = '#e74c3c';
+            }
+        }
+
+        // Load CEDD data
+        async function loadCEDDData() {
+            try {
+                const response = await fetch(dataSources.cedd.url);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                ceddData = data.features || [];
+                
+                // Extract unique categories for filter
+                const categories = [...new Set(ceddData
+                    .map(f => f.properties.CategoryID)
+                    .filter(cat => cat && cat.trim() !== ''))].sort();
+                
+                // Populate category filter
+                const filterSelect = document.getElementById('filterCategoryCEDD');
+                filterSelect.innerHTML = '<option value="">所有狀態</option>';
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = getCategoryName(category);
+                    filterSelect.appendChild(option);
+                });
+                
+                // Render accordion list
+                renderCEDDList();
+                
+            } catch (error) {
+                console.error('Error loading CEDD data:', error);
+                showNotification('無法載入土木工程拓展署工程數據', 'error');
+            }
+        }
+
+        // Render Waterworks list with nested accordion
+        function renderWaterworksList() {
+            const container = document.getElementById('waterworksList');
+            container.innerHTML = '';
+            
+            if (waterworksData.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-water"></i><p>沒有找到水務署工程項目</p></div>';
+                return;
+            }
+            
+            // Group by PROGRESS
+            const groupedByProgress = {};
+            waterworksData.forEach(feature => {
+                const progress = feature.properties.PROGRESS || '未分類';
+                if (!groupedByProgress[progress]) {
+                    groupedByProgress[progress] = [];
+                }
+                groupedByProgress[progress].push(feature);
+            });
+            
+            // Sort progress groups
+            const sortedGroups = Object.keys(groupedByProgress).sort();
+            
+            sortedGroups.forEach(progress => {
+                const projects = groupedByProgress[progress];
+                
+                // Create progress accordion item
+                const progressItem = document.createElement('div');
+                progressItem.className = 'nested-accordion-item';
+                progressItem.innerHTML = `
+                    <div class="nested-accordion-header">
+                        <span>
+                            ${getProgressName(progress)}
+                            <span class="project-counter">${projects.length}</span>
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="nested-accordion-content">
+                        <div class="projects-container"></div>
+                    </div>
+                `;
+                
+                container.appendChild(progressItem);
+                
+                // Setup nested accordion event delegation
+                setupNestedAccordionEvents(progressItem);
+                
+                // Add project items
+                const projectsContainer = progressItem.querySelector('.projects-container');
+                projects.forEach(project => {
+                    const projectItem = createWaterworksProjectItem(project);
+                    projectsContainer.appendChild(projectItem);
+                });
+            });
+            
+            // Setup project item click events (only if not already set up)
+            if (!eventListenersSetup.waterworks) {
+                setupProjectItemEvents('waterworks');
+                eventListenersSetup.waterworks = true;
+            }
+        }
+
+        // Setup nested accordion events using event delegation
+        function setupNestedAccordionEvents(container) {
+            container.addEventListener('click', function(e) {
+                const header = e.target.closest('.nested-accordion-header, .level3-accordion-header, .level4-accordion-header');
+                
+                if (!header) return;
+                
+                e.stopPropagation();
+                const content = header.nextElementSibling;
+                const isActive = header.classList.contains('active');
+
+                // Toggle current item
+                header.classList.toggle('active');
+                content.classList.toggle('active');
+                
+                // Rotate icon
+                const icon = header.querySelector('.fa-chevron-down');
+                if (isActive) {
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        }
+
+        // Render ArchSD list with nested accordion
+        function renderArchSDList(type) {
+            const containerId = type === 'planning' ? 'archSDPlanningList' : 'archSDConstructionList';
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const data = type === 'planning' ? archSDPlanningData : archSDConstructionData;
+            
+            if (data.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-hard-hat"></i><p>沒有找到建築署${type === 'planning' ? '規劃中' : '興建中'}工程項目</p></div>`;
+                return;
+            }
+            
+            // Group data by locationCht -> projectTypeCht -> buildingTypeCht -> estimatedProjectCost
+            const groupedData = {};
+            data.forEach(feature => {
+                const props = feature.properties;
+                const location = props.locationCht || '未分類';
+                const projectType = props.projectTypeCht || '未分類';
+                const buildingType = props.buildingTypeCht || '未分類';
+                const cost = props.estimatedProjectCost || '未分類';
+                
+                if (!groupedData[location]) groupedData[location] = {};
+                if (!groupedData[location][projectType]) groupedData[location][projectType] = {};
+                if (!groupedData[location][projectType][buildingType]) groupedData[location][projectType][buildingType] = {};
+                if (!groupedData[location][projectType][buildingType][cost]) groupedData[location][projectType][buildingType][cost] = [];
+                
+                groupedData[location][projectType][buildingType][cost].push(feature);
+            });
+            
+            // Sort locations
+            const sortedLocations = Object.keys(groupedData).sort();
+            
+            sortedLocations.forEach(location => {
+                const locationData = groupedData[location];
+                
+                // Create location accordion item
+                const locationItem = document.createElement('div');
+                locationItem.className = 'nested-accordion-item';
+                locationItem.innerHTML = `
+                    <div class="nested-accordion-header">
+                        <span>${location}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="nested-accordion-content">
+                        <div class="location-content"></div>
+                    </div>
+                `;
+                
+                container.appendChild(locationItem);
+                
+                // Setup nested accordion events
+                setupNestedAccordionEvents(locationItem);
+                
+                // Add project type content
+                const locationContent = locationItem.querySelector('.location-content');
+                renderArchSDProjectTypes(locationData, locationContent, type);
+            });
+            
+            // Setup project item click events (only if not already set up)
+            const dataType = type === 'planning' ? 'archsdPlanning' : 'archsdConstruction';
+            if (!eventListenersSetup[dataType]) {
+                setupProjectItemEvents(dataType);
+                eventListenersSetup[dataType] = true;
+            }
+        }
+
+        // Render ArchSD project types
+        function renderArchSDProjectTypes(locationData, container, type) {
+            // Sort project types
+            const sortedProjectTypes = Object.keys(locationData).sort();
+            
+            sortedProjectTypes.forEach(projectType => {
+                const projectTypeData = locationData[projectType];
+                
+                // Create project type accordion item
+                const projectTypeItem = document.createElement('div');
+                projectTypeItem.className = 'level3-accordion-item';
+                projectTypeItem.innerHTML = `
+                    <div class="level3-accordion-header">
+                        <span>${projectType}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="level3-accordion-content">
+                        <div class="project-type-content"></div>
+                    </div>
+                `;
+                
+                container.appendChild(projectTypeItem);
+                
+                // Setup nested accordion events
+                setupNestedAccordionEvents(projectTypeItem);
+                
+                // Add building type content
+                const projectTypeContent = projectTypeItem.querySelector('.project-type-content');
+                renderArchSDBuildingTypes(projectTypeData, projectTypeContent, type);
+            });
+        }
+
+        // Render ArchSD building types
+        function renderArchSDBuildingTypes(projectTypeData, container, type) {
+            // Sort building types
+            const sortedBuildingTypes = Object.keys(projectTypeData).sort();
+            
+            sortedBuildingTypes.forEach(buildingType => {
+                const buildingTypeData = projectTypeData[buildingType];
+                
+                // Create building type accordion item
+                const buildingTypeItem = document.createElement('div');
+                buildingTypeItem.className = 'level4-accordion-item';
+                buildingTypeItem.innerHTML = `
+                    <div class="level4-accordion-header">
+                        <span>${buildingType}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="level4-accordion-content">
+                        <div class="building-type-content"></div>
+                    </div>
+                `;
+                
+                container.appendChild(buildingTypeItem);
+                
+                // Setup nested accordion events
+                setupNestedAccordionEvents(buildingTypeItem);
+                
+                // Add cost content
+                const buildingTypeContent = buildingTypeItem.querySelector('.building-type-content');
+                renderArchSDCosts(buildingTypeData, buildingTypeContent, type);
+            });
+        }
+
+        // Render ArchSD costs
+        function renderArchSDCosts(buildingTypeData, container, type) {
+            // Sort cost categories
+            const sortedCosts = Object.keys(buildingTypeData).sort();
+            
+            sortedCosts.forEach(cost => {
+                const projects = buildingTypeData[cost];
+                
+                // Create cost section
+                const costSection = document.createElement('div');
+                costSection.className = 'cost-section';
+                costSection.innerHTML = `
+                    <div style="margin-bottom: 10px; padding: 8px; background-color: #f5f5f5; border-radius: 4px;">
+                        <strong>${cost}</strong>
+                        <span class="project-counter" style="background-color: #666;">${projects.length}</span>
+                    </div>
+                    <div class="projects-container"></div>
+                `;
+                
+                container.appendChild(costSection);
+                
+                // Add project items
+                const projectsContainer = costSection.querySelector('.projects-container');
+                projects.forEach(project => {
+                    const projectItem = type === 'planning' 
+                        ? createArchSDPlanningProjectItem(project)
+                        : createArchSDConstructionProjectItem(project);
+                    projectsContainer.appendChild(projectItem);
+                });
+            });
+        }
+
+        // Render CEDD list with nested accordion
+        function renderCEDDList() {
+            const container = document.getElementById('ceddList');
+            container.innerHTML = '';
+            
+            if (ceddData.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-mountain"></i><p>沒有找到土木工程拓展署工程項目</p></div>';
+                return;
+            }
+            
+            // Group by CategoryID
+            const groupedByCategory = {};
+            ceddData.forEach(feature => {
+                const category = feature.properties.CategoryID || '未分類';
+                if (!groupedByCategory[category]) {
+                    groupedByCategory[category] = [];
+                }
+                groupedByCategory[category].push(feature);
+            });
+            
+            // Sort categories
+            const sortedCategories = Object.keys(groupedByCategory).sort();
+            
+            sortedCategories.forEach(category => {
+                const projects = groupedByCategory[category];
+                
+                // Create category accordion item
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'nested-accordion-item';
+                categoryItem.innerHTML = `
+                    <div class="nested-accordion-header">
+                        <span>
+                            ${getCategoryName(category)}
+                            <span class="project-counter">${projects.length}</span>
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="nested-accordion-content">
+                        <div class="projects-container"></div>
+                    </div>
+                `;
+                
+                container.appendChild(categoryItem);
+                
+                // Setup nested accordion events
+                setupNestedAccordionEvents(categoryItem);
+                
+                // Add project items
+                const projectsContainer = categoryItem.querySelector('.projects-container');
+                projects.forEach(project => {
+                    const projectItem = createCEDDProjectItem(project);
+                    projectsContainer.appendChild(projectItem);
+                });
+            });
+            
+            // Setup project item click events (only if not already set up)
+            if (!eventListenersSetup.cedd) {
+                setupProjectItemEvents('cedd');
+                eventListenersSetup.cedd = true;
+            }
+        }
+
+        // Create Waterworks project item
+        function createWaterworksProjectItem(project) {
+            const props = project.properties;
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.dataset.gmlId = props.GmlID;
+            projectItem.dataset.dataType = 'waterworks';
+            
+            // Get status badge
+            const statusBadge = getStatusBadge(props.PROGRESS);
+            
+            projectItem.innerHTML = `
+                <div class="project-name">
+                    ${statusBadge}
+                    ${props.PROJECT || '未命名項目'}
+                </div>
+                <div class="project-details">
+                    <div class="project-detail-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>${props.OVERVIEW_CHINESE || props.OVERVIEW || '無概述'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-tag"></i>
+                        <span>項目編號: ${props.ITEM || 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+            
+            return projectItem;
+        }
+
+        // Create ArchSD Planning project item
+        function createArchSDPlanningProjectItem(project) {
+            const props = project.properties;
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.dataset.gmlId = props.GmlID;
+            projectItem.dataset.dataType = 'archsdPlanning';
+            
+            projectItem.innerHTML = `
+                <div class="project-name">
+                    ${props.projectTitleCht || props.projectTitle || '未命名項目'}
+                </div>
+                <div class="project-details">
+                    <div class="project-detail-item">
+                        <i class="fas fa-hashtag"></i>
+                        <span>項目編號: ${props.projectCode || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-user"></i>
+                        <span>聯絡人: ${props.contactPersonCht || props.contactPerson || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>預計開始: ${props.scheduledProjectStart || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>預計完成: ${props.scheduledProjectCompletion || 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+            
+            return projectItem;
+        }
+
+        // Create ArchSD Construction project item
+        function createArchSDConstructionProjectItem(project) {
+            const props = project.properties;
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.dataset.gmlId = props.GmlID;
+            projectItem.dataset.dataType = 'archsdConstruction';
+            
+            projectItem.innerHTML = `
+                <div class="project-name">
+                    ${props.projectTitleCht || props.projectTitle || '未命名項目'}
+                </div>
+                <div class="project-details">
+                    <div class="project-detail-item">
+                        <i class="fas fa-hashtag"></i>
+                        <span>項目編號: ${props.projectCode || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-user"></i>
+                        <span>聯絡人: ${props.contactPersonCht || props.contactPerson || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-file-contract"></i>
+                        <span>合約: ${props.currentContractsCht || props.currentContracts || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>預計完成: ${props.scheduledProjectCompletion || 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+            
+            return projectItem;
+        }
+
+        // Create CEDD project item
+        function createCEDDProjectItem(project) {
+            const props = project.properties;
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.dataset.gmlId = props.GmlID;
+            projectItem.dataset.dataType = 'cedd';
+            
+            // Get status badge
+            const statusBadge = getCategoryBadge(props.CategoryID);
+            
+            projectItem.innerHTML = `
+                <div class="project-name">
+                    ${statusBadge}
+                    ${props.Traditional_Chinese_Title || props.English_Title || '未命名項目'}
+                </div>
+                <div class="project-details">
+                    <div class="project-detail-item">
+                        <i class="fas fa-hashtag"></i>
+                        <span>項目編號: ${props.ProjectCode || 'N/A'}</span>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>位置: 經度 ${props.Longitude || 'N/A'}, 緯度 ${props.Latitude || 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+            
+            return projectItem;
+        }
+
+        // Setup project item click events - FIXED: Use event delegation
+        function setupProjectItemEvents(dataType) {
+            // Use event delegation on the document level
+            document.addEventListener('click', function(e) {
+                const projectItem = e.target.closest(`.project-item[data-data-type="${dataType}"]`);
+                if (!projectItem) return;
+                
+                e.stopPropagation();
+                
+                // Remove active class from all project items of same data type
+                document.querySelectorAll(`.project-item[data-data-type="${dataType}"]`).forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                projectItem.classList.add('active');
+                
+                // Find and select the corresponding feature
+                const gmlId = projectItem.dataset.gmlId;
+                let feature;
+                
+                switch(dataType) {
+                    case 'waterworks':
+                        feature = waterworksData.find(f => f.properties.GmlID === gmlId);
+                        break;
+                    case 'archsdPlanning':
+                        feature = archSDPlanningData.find(f => f.properties.GmlID === gmlId);
+                        break;
+                    case 'archsdConstruction':
+                        feature = archSDConstructionData.find(f => f.properties.GmlID === gmlId);
+                        break;
+                    case 'cedd':
+                        feature = ceddData.find(f => f.properties.GmlID === gmlId);
+                        break;
+                }
+                
+                if (feature) {
+                    selectFeature(feature, dataType);
+                }
+            });
+        }
+
+        // Create map features
+        function createMapFeatures(features, dataType, color) {
+            // Clear existing features for this data type
+            allLayers[dataType].clearLayers();
+            
+            features.forEach(feature => {
+                let layer;
+                
+                if (feature.geometry.type === 'Point') {
+                    const coords = feature.geometry.coordinates;
+                    layer = L.circleMarker([coords[1], coords[0]], {
+                        radius: 8,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                } else if (feature.geometry.type === 'MultiPolygon') {
+                    // Convert MultiPolygon coordinates
+                    const coordinates = feature.geometry.coordinates;
+                    const polygons = coordinates.map(polygonCoords => {
+                        return polygonCoords.map(ring => {
+                            return ring.map(coord => [coord[1], coord[0]]);
+                        });
+                    });
+                    
+                    layer = L.polygon(polygons.flat(), {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.3,
+                        weight: 2
+                    });
+                }
+                
+                if (layer) {
+                    // Add popup
+                    const popupContent = createPopupContent(feature, dataType);
+                    layer.bindPopup(popupContent);
+                    
+                    // Add click event - use named function to prevent duplicate binding
+                    layer.off('click'); // Remove existing listeners
+                    layer.on('click', function () {
+                        selectFeature(feature, dataType);
+                        
+                        // Find and highlight the corresponding list item
+                        document.querySelectorAll('.project-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.dataset.gmlId === feature.properties.GmlID) {
+                                item.classList.add('active');
+                                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        });
+                    });
+                    
+                    allLayers[dataType].addLayer(layer);
+                }
+            });
+        }
+
+        // Select and highlight a feature
+        function selectFeature(feature, dataType) {
+            const props = feature.properties;
+            
+            // Clear previous selection
+            if (selectedFeature) {
+                map.removeLayer(selectedFeature);
+                selectedFeature = null;
+            }
+            
+            // Create highlighted feature based on geometry type
+            if (feature.geometry.type === 'Point') {
+                const coords = feature.geometry.coordinates;
+                selectedFeature = L.circleMarker([coords[1], coords[0]], {
+                    radius: 12,
+                    fillColor: '#ffcc00',
+                    color: '#ff9900',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+                
+                // Pan to the selected feature
+                map.setView([coords[1], coords[0]], 14);
+            } else if (feature.geometry.type === 'MultiPolygon') {
+                // Convert MultiPolygon coordinates
+                const coordinates = feature.geometry.coordinates;
+                const polygons = coordinates.map(polygonCoords => {
+                    return polygonCoords.map(ring => {
+                        return ring.map(coord => [coord[1], coord[0]]);
+                    });
+                });
+                
+                selectedFeature = L.polygon(polygons.flat(), {
+                    color: '#ffcc00',
+                    fillColor: '#ffcc00',
+                    fillOpacity: 0.5,
+                    weight: 3
+                }).addTo(map);
+                
+                // Fit bounds to the polygon
+                const bounds = selectedFeature.getBounds();
+                map.fitBounds(bounds);
+            }
+            
+            // Create popup content
+            const popupContent = createPopupContent(feature, dataType);
+            
+            // Open popup
+            selectedFeature.bindPopup(popupContent).openPopup();
+            
+            // Show notification
+            const projectName = getProjectName(feature, dataType);
+            showNotification(`已選取: ${projectName}`);
+        }
+
+        // Create popup content
+        function createPopupContent(feature, dataType) {
+            const props = feature.properties;
+            let content = `<div style="max-width: 300px;">`;
+            
+            switch(dataType) {
+                case 'waterworks':
+                    content += `
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
+                            ${props.PROJECT || '未命名項目'}
+                        </div>
+                        <div><strong>進度:</strong> ${getProgressName(props.PROGRESS)}</div>
+                        <div><strong>概述:</strong><br>${props.OVERVIEW_CHINESE || props.OVERVIEW || '無概述'}</div>
+                        <div><strong>項目編號:</strong> ${props.ITEM || 'N/A'}</div>
+                    `;
+                    break;
+                    
+                case 'archsdPlanning':
+                    content += `
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
+                            ${props.projectTitleCht || props.projectTitle || '未命名項目'}
+                        </div>
+                        <div><strong>項目編號:</strong> ${props.projectCode || 'N/A'}</div>
+                        <div><strong>地區:</strong> ${props.locationCht || props.location || 'N/A'}</div>
+                        <div><strong>項目類型:</strong> ${props.projectTypeCht || props.projectType || 'N/A'}</div>
+                        <div><strong>建築類型:</strong> ${props.buildingTypeCht || props.buildingType || 'N/A'}</div>
+                        <div><strong>預計成本:</strong> ${props.estimatedProjectCost || 'N/A'}</div>
+                        <div><strong>聯絡人:</strong> ${props.contactPersonCht || props.contactPerson || 'N/A'}</div>
+                        <div><strong>預計開始:</strong> ${props.scheduledProjectStart || 'N/A'}</div>
+                        <div><strong>預計完成:</strong> ${props.scheduledProjectCompletion || 'N/A'}</div>
+                    `;
+                    break;
+                    
+                case 'archsdConstruction':
+                    content += `
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
+                            ${props.projectTitleCht || props.projectTitle || '未命名項目'}
+                        </div>
+                        <div><strong>項目編號:</strong> ${props.projectCode || 'N/A'}</div>
+                        <div><strong>地區:</strong> ${props.locationCht || props.location || 'N/A'}</div>
+                        <div><strong>項目類型:</strong> ${props.projectTypeCht || props.projectType || 'N/A'}</div>
+                        <div><strong>建築類型:</strong> ${props.buildingTypeCht || props.buildingType || 'N/A'}</div>
+                        <div><strong>預計成本:</strong> ${props.estimatedProjectCost || 'N/A'}</div>
+                        <div><strong>聯絡人:</strong> ${props.contactPersonCht || props.contactPerson || 'N/A'}</div>
+                        <div><strong>合約詳情:</strong><br>${props.currentContractsCht || props.currentContracts || 'N/A'}</div>
+                        <div><strong>預計完成:</strong> ${props.scheduledProjectCompletion || 'N/A'}</div>
+                    `;
+                    break;
+                    
+                case 'cedd':
+                    content += `
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
+                            ${props.Traditional_Chinese_Title || props.English_Title || '未命名項目'}
+                        </div>
+                        <div><strong>項目編號:</strong> ${props.ProjectCode || 'N/A'}</div>
+                        <div><strong>狀態:</strong> ${getCategoryName(props.CategoryID)}</div>
+                        <div><strong>經度:</strong> ${props.Longitude || 'N/A'}</div>
+                        <div><strong>緯度:</strong> ${props.Latitude || 'N/A'}</div>
+                    `;
+                    break;
+                    
+                case 'roadworks':
+                    content += `
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
+                            道路工程位置
+                        </div>
+                        <div><strong>詳細資料需參考運輸署數據規格</strong></div>
+                    `;
+                    break;
+            }
+            
+            content += `</div>`;
+            return content;
+        }
+
+        // Filter functions
+        function filterWaterworksProjects(searchTerm) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            
+            document.querySelectorAll('.project-item[data-data-type="waterworks"]').forEach(item => {
+                const projectName = item.querySelector('.project-name').textContent.toLowerCase();
+                const projectDetails = item.querySelector('.project-details').textContent.toLowerCase();
+                
+                if (!searchLower || projectName.includes(searchLower) || projectDetails.includes(searchLower)) {
+                    item.style.display = 'block';
+                    
+                    // Ensure parent accordions are expanded
+                    expandParentAccordions(item);
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterArchSDProjects(searchTerm, type) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            const dataType = type === 'planning' ? 'archsdPlanning' : 'archsdConstruction';
+            
+            document.querySelectorAll(`.project-item[data-data-type="${dataType}"]`).forEach(item => {
+                const projectName = item.querySelector('.project-name').textContent.toLowerCase();
+                const projectDetails = item.querySelector('.project-details').textContent.toLowerCase();
+                
+                if (!searchLower || projectName.includes(searchLower) || projectDetails.includes(searchLower)) {
+                    item.style.display = 'block';
+                    
+                    // Ensure parent accordions are expanded
+                    expandParentAccordions(item);
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterArchSDByLocation(location, type) {
+            const containerId = type === 'planning' ? 'archSDPlanningList' : 'archSDConstructionList';
+            const container = document.getElementById(containerId);
+            
+            if (container) {
+                container.querySelectorAll('.nested-accordion-item').forEach(accordion => {
+                    const header = accordion.querySelector('.nested-accordion-header');
+                    const locationName = header.textContent.replace(/[\s\d]/g, ''); // Remove counters and whitespace
+                    
+                    if (!location || locationName === location) {
+                        accordion.style.display = 'block';
+                    } else {
+                        accordion.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        function filterCEDDProjects(searchTerm) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            
+            document.querySelectorAll('.project-item[data-data-type="cedd"]').forEach(item => {
+                const projectName = item.querySelector('.project-name').textContent.toLowerCase();
+                const projectDetails = item.querySelector('.project-details').textContent.toLowerCase();
+                
+                if (!searchLower || projectName.includes(searchLower) || projectDetails.includes(searchLower)) {
+                    item.style.display = 'block';
+                    
+                    // Ensure parent accordions are expanded
+                    expandParentAccordions(item);
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterCEDDByCategory(category) {
+            const container = document.getElementById('ceddList');
+            
+            if (container) {
+                container.querySelectorAll('.nested-accordion-item').forEach(accordion => {
+                    const header = accordion.querySelector('.nested-accordion-header');
+                    const categoryName = getCategoryName(category);
+                    const headerText = header.textContent.replace(/[\s\d]/g, ''); // Remove counters and whitespace
+                    
+                    if (!category || headerText === categoryName) {
+                        accordion.style.display = 'block';
+                    } else {
+                        accordion.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Helper function to expand parent accordions
+        function expandParentAccordions(item) {
+            let parent = item.parentElement;
+            while (parent) {
+                if (parent.classList.contains('nested-accordion-content') || 
+                    parent.classList.contains('level3-accordion-content') ||
+                    parent.classList.contains('level4-accordion-content')) {
+                    const header = parent.previousElementSibling;
+                    if (header) {
+                        if (!header.classList.contains('active')) {
+                            header.classList.add('active');
+                            parent.classList.add('active');
+                            const icon = header.querySelector('.fa-chevron-down');
+                            if (icon) icon.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                }
+                parent = parent.parentElement;
+            }
+        }
+
+        // Helper functions
+        function getProgressName(progress) {
+            switch(progress) {
+                case 'C':
+                    return '已完成';
+                case 'UP':
+                    return '規劃中';
+                case 'UC':
+                    return '施工中';
+                default:
+                    return progress || '未分類';
+            }
+        }
+
+        function getStatusBadge(progress) {
+            let badgeClass = 'status-inprogress';
+            let badgeText = getProgressName(progress);
+            
+            switch(progress) {
+                case 'C':
+                    badgeClass = 'status-completed';
+                    break;
+                case 'P':
+                    badgeClass = 'status-planned';
+                    break;
+                case 'U':
+                    badgeClass = 'status-inprogress';
+                    break;
+            }
+            
+            return `<span class="status-badge ${badgeClass}">${badgeText}</span>`;
+        }
+
+        function getCategoryName(category) {
+            switch(category) {
+                case 'Completed':
+                    return '已完成';
+                case 'InProgress':
+                    return '進行中';
+                case 'Planned':
+                    return '規劃中';
+                default:
+                    return category || '未分類';
+            }
+        }
+
+        function getCategoryBadge(category) {
+            let badgeClass = 'status-inprogress';
+            let badgeText = getCategoryName(category);
+            
+            switch(category) {
+                case 'Completed':
+                    badgeClass = 'status-completed';
+                    break;
+                case 'InProgress':
+                    badgeClass = 'status-inprogress';
+                    break;
+                case 'Planned':
+                    badgeClass = 'status-planned';
+                    break;
+            }
+            
+            return `<span class="status-badge ${badgeClass}">${badgeText}</span>`;
+        }
+
+        function getProjectName(feature, dataType) {
+            const props = feature.properties;
+            
+            switch(dataType) {
+                case 'waterworks':
+                    return props.PROJECT || '未命名項目';
+                case 'archsdPlanning':
+                case 'archsdConstruction':
+                    return props.projectTitleCht || props.projectTitle || '未命名項目';
+                case 'cedd':
+                    return props.Traditional_Chinese_Title || props.English_Title || '未命名項目';
+                case 'roadworks':
+                    return '道路工程位置';
+                default:
+                    return '未命名項目';
+            }
+        }
+
+        // Show temporary notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: ${type === 'error' ? '#e74c3c' : '#2c6c91'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 300px;
+                animation: fadeInOut 3s ease-in-out;
+            `;
+
+            // Add keyframes for animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateY(-10px); }
+                    10% { opacity: 1; transform: translateY(0); }
+                    90% { opacity: 1; transform: translateY(0); }
+                    100% { opacity: 0; transform: translateY(-10px); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Remove after animation completes
+            setTimeout(() => {
+                notification.remove();
+                style.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
