@@ -699,12 +699,6 @@
             overflow: hidden;
         }
 
-        .iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
         /* Status badges */
         .status-badge {
             display: inline-block;
@@ -804,7 +798,8 @@
                     </div>
                     <div class="accordion-content" id="contentArchSDPlanning">
                         <div class="search-box">
-                            <input type="text" id="searchArchSDPlanning" class="search-input" placeholder="搜尋項目標題、聯絡人或項目編號...">
+                            <input type="text" id="searchArchSDPlanning" class="search-input"
+                                placeholder="搜尋項目標題、聯絡人或項目編號...">
                         </div>
                         <div class="filter-controls">
                             <label for="filterLocationPlanning">按地區篩選:</label>
@@ -827,7 +822,8 @@
                     </div>
                     <div class="accordion-content" id="contentArchSDConstruction">
                         <div class="search-box">
-                            <input type="text" id="searchArchSDConstruction" class="search-input" placeholder="搜尋項目標題、聯絡人、合約或項目編號...">
+                            <input type="text" id="searchArchSDConstruction" class="search-input"
+                                placeholder="搜尋項目標題、聯絡人、合約或項目編號...">
                         </div>
                         <div class="filter-controls">
                             <label for="filterLocationConstruction">按地區篩選:</label>
@@ -871,7 +867,7 @@
                             <p>此數據來源需通過政府地理空間信息門戶查看</p>
                         </div>
                         <div class="iframe-container">
-                            <a src="https://portal.csdi.gov.hk/geoportal/#mapPanel">CSDI 地圖</a>
+                            <a href="https://portal.csdi.gov.hk/geoportal/#mapPanel">CSDI 地圖</a>
                         </div>
                     </div>
                 </div>
@@ -1002,14 +998,14 @@
         let allLayers = {};
         let selectedFeature = null;
         let currentActiveSource = 'waterworks';
-        
+
         // Data storage
         let waterworksData = [];
         let archSDPlanningData = [];
         let archSDConstructionData = [];
         let roadworksData = [];
         let ceddData = [];
-        
+
         // Event listener trackers to prevent duplicate binding
         let eventListenersSetup = {
             waterworks: false,
@@ -1100,7 +1096,7 @@
             setupAccordion();
             setupEventListeners();
             loadAllDataSources();
-            
+
             // Handle mobile panel toggle
             const panelToggle = document.getElementById('panelToggle');
             const accordionPanel = document.getElementById('accordionPanel');
@@ -1111,10 +1107,10 @@
                     ? '<i class="fas fa-bars"></i> 顯示控制面板'
                     : '<i class="fas fa-bars"></i> 隱藏控制面板';
             });
-            
+
             // Update coordinates on map move
-            map.on('mousemove', function(e) {
-                document.getElementById('coordinatesDisplay').textContent = 
+            map.on('mousemove', function (e) {
+                document.getElementById('coordinatesDisplay').textContent =
                     `經度: ${e.latlng.lng.toFixed(6)}, 緯度: ${e.latlng.lat.toFixed(6)}`;
             });
         });
@@ -1126,7 +1122,7 @@
 
             // Add default layer
             currentTileLayer.addTo(map);
-            
+
             // Initialize layer groups
             for (const key in dataSources) {
                 allLayers[key] = L.layerGroup().addTo(map);
@@ -1136,10 +1132,10 @@
         // Setup main accordion functionality - FIXED: Prevent duplicate event binding
         function setupAccordion() {
             // Use event delegation for accordion headers
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 const accordionHeader = e.target.closest('.accordion-header');
                 if (!accordionHeader) return;
-                
+
                 e.stopPropagation();
                 const content = accordionHeader.nextElementSibling;
                 const isActive = accordionHeader.classList.contains('active');
@@ -1147,7 +1143,7 @@
                 // Toggle current item
                 accordionHeader.classList.toggle('active');
                 content.classList.toggle('active');
-                
+
                 // Rotate icon
                 const icon = accordionHeader.querySelector('.fa-chevron-down');
                 if (isActive) {
@@ -1186,7 +1182,7 @@
             });
 
             // Search inputs - use event delegation to handle dynamic content
-            document.addEventListener('input', function(e) {
+            document.addEventListener('input', function (e) {
                 if (e.target.id === 'searchWaterworks') {
                     filterWaterworksProjects(e.target.value);
                 } else if (e.target.id === 'searchArchSDPlanning') {
@@ -1212,15 +1208,15 @@
             });
 
             // Click on data source headers to activate them
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 // Check if clicked on an accordion header of a data source
                 const accordionHeader = e.target.closest('.accordion-header');
                 if (!accordionHeader) return;
-                
+
                 // Find which data source was clicked
                 const accordionItem = accordionHeader.parentElement;
                 let sourceType = null;
-                
+
                 if (accordionItem.id === 'waterworksSource') sourceType = 'waterworks';
                 else if (accordionItem.id === 'archsdPlanningSource') sourceType = 'archsdPlanning';
                 else if (accordionItem.id === 'archsdConstructionSource') sourceType = 'archsdConstruction';
@@ -1228,7 +1224,7 @@
                 else if (accordionItem.id === 'ceddSource') sourceType = 'cedd';
                 else if (accordionItem.id === 'daytimeBanSource') sourceType = 'daytimeBan';
                 else if (accordionItem.id === 'unauthorisedWorkSource') sourceType = 'unauthorisedWork';
-                
+
                 if (sourceType && sourceType !== 'daytimeBan' && sourceType !== 'unauthorisedWork') {
                     // Activate this data source
                     activateDataSource(sourceType);
@@ -1242,19 +1238,19 @@
             document.querySelectorAll('.accordion-item').forEach(item => {
                 item.classList.remove('data-source-active');
             });
-            
+
             // Add active class to clicked data source
             const sourceElement = document.getElementById(dataSources[sourceType].elementId);
             if (sourceElement) {
                 sourceElement.classList.add('data-source-active');
             }
-            
+
             // Update current active source
             currentActiveSource = sourceType;
-            
+
             // Clear all map features
             clearAllMapFeatures();
-            
+
             // Show features for active data source
             showActiveDataSourceFeatures();
         }
@@ -1273,8 +1269,8 @@
         // Show features for active data source
         function showActiveDataSourceFeatures() {
             let data, dataType, color;
-            
-            switch(currentActiveSource) {
+
+            switch (currentActiveSource) {
                 case 'waterworks':
                     data = waterworksData;
                     dataType = 'waterworks';
@@ -1303,7 +1299,7 @@
                 default:
                     return;
             }
-            
+
             if (data && data.length > 0) {
                 createMapFeatures(data, dataType, color);
             }
@@ -1325,10 +1321,10 @@
                 ]);
 
                 console.log('All data sources loaded successfully');
-                
+
                 // Show features for waterworks data by default
                 showActiveDataSourceFeatures();
-                
+
             } catch (error) {
                 console.error('Error loading data sources:', error);
                 showNotification('載入數據時發生錯誤，請稍後再試。', 'error');
@@ -1342,21 +1338,21 @@
             try {
                 const response = await fetch(dataSources.waterworks.url);
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                
+
                 const data = await response.json();
                 waterworksData = data.features || [];
-                
+
                 // Update stats
                 document.getElementById('waterworksTotal').textContent = waterworksData.length;
-                
+
                 // Group by PROGRESS for stats
                 const progressGroups = new Set();
                 waterworksData.forEach(f => progressGroups.add(f.properties.PROGRESS || '未分類'));
                 document.getElementById('waterworksGroups').textContent = progressGroups.size;
-                
+
                 // Render accordion list
                 renderWaterworksList();
-                
+
             } catch (error) {
                 console.error('Error loading waterworks data:', error);
                 showNotification('無法載入水務署工程數據', 'error');
@@ -1368,15 +1364,15 @@
             try {
                 const response = await fetch(dataSources.archsdPlanning.url);
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                
+
                 const data = await response.json();
                 archSDPlanningData = data.features || [];
-                
+
                 // Extract unique locations for filter
                 const locations = [...new Set(archSDPlanningData
                     .map(f => f.properties.locationCht)
                     .filter(loc => loc && loc.trim() !== ''))].sort();
-                
+
                 // Populate location filter
                 const filterSelect = document.getElementById('filterLocationPlanning');
                 filterSelect.innerHTML = '<option value="">所有地區</option>';
@@ -1386,10 +1382,10 @@
                     option.textContent = location;
                     filterSelect.appendChild(option);
                 });
-                
+
                 // Render accordion list
                 renderArchSDList('planning');
-                
+
             } catch (error) {
                 console.error('Error loading ArchSD planning data:', error);
                 showNotification('無法載入建築署規劃中工程數據', 'error');
@@ -1401,15 +1397,15 @@
             try {
                 const response = await fetch(dataSources.archsdConstruction.url);
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                
+
                 const data = await response.json();
                 archSDConstructionData = data.features || [];
-                
+
                 // Extract unique locations for filter
                 const locations = [...new Set(archSDConstructionData
                     .map(f => f.properties.locationCht)
                     .filter(loc => loc && loc.trim() !== ''))].sort();
-                
+
                 // Populate location filter
                 const filterSelect = document.getElementById('filterLocationConstruction');
                 filterSelect.innerHTML = '<option value="">所有地區</option>';
@@ -1419,10 +1415,10 @@
                     option.textContent = location;
                     filterSelect.appendChild(option);
                 });
-                
+
                 // Render accordion list
                 renderArchSDList('construction');
-                
+
             } catch (error) {
                 console.error('Error loading ArchSD construction data:', error);
                 showNotification('無法載入建築署興建中工程數據', 'error');
@@ -1434,24 +1430,24 @@
             try {
                 const response = await fetch(dataSources.roadworks.url);
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                
+
                 const data = await response.json();
                 roadworksData = data.features || [];
-                
+
                 const statusElement = document.getElementById('roadworksStatus');
-                
+
                 if (roadworksData.length === 0) {
                     statusElement.textContent = '尚未新增道路工程';
                     statusElement.style.color = '#f39c12';
                 } else {
                     statusElement.textContent = `已載入 ${roadworksData.length} 個道路工程位置`;
                     statusElement.style.color = '#27ae60';
-                    
+
                     // Show features on map if this is the active source
                     if (currentActiveSource === 'roadworks') {
                         createMapFeatures(roadworksData, 'roadworks', dataSources.roadworks.color);
                     }
-                    
+
                     document.getElementById('roadworksList').innerHTML = `
                         <div class="info-box">
                             <h4>道路工程位置數據</h4>
@@ -1460,7 +1456,7 @@
                         </div>
                     `;
                 }
-                
+
             } catch (error) {
                 console.error('Error loading roadworks data:', error);
                 document.getElementById('roadworksStatus').textContent = '載入道路工程數據時發生錯誤';
@@ -1473,15 +1469,15 @@
             try {
                 const response = await fetch(dataSources.cedd.url);
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                
+
                 const data = await response.json();
                 ceddData = data.features || [];
-                
+
                 // Extract unique categories for filter
                 const categories = [...new Set(ceddData
                     .map(f => f.properties.CategoryID)
                     .filter(cat => cat && cat.trim() !== ''))].sort();
-                
+
                 // Populate category filter
                 const filterSelect = document.getElementById('filterCategoryCEDD');
                 filterSelect.innerHTML = '<option value="">所有狀態</option>';
@@ -1491,10 +1487,10 @@
                     option.textContent = getCategoryName(category);
                     filterSelect.appendChild(option);
                 });
-                
+
                 // Render accordion list
                 renderCEDDList();
-                
+
             } catch (error) {
                 console.error('Error loading CEDD data:', error);
                 showNotification('無法載入土木工程拓展署工程數據', 'error');
@@ -1505,12 +1501,12 @@
         function renderWaterworksList() {
             const container = document.getElementById('waterworksList');
             container.innerHTML = '';
-            
+
             if (waterworksData.length === 0) {
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-water"></i><p>沒有找到水務署工程項目</p></div>';
                 return;
             }
-            
+
             // Group by PROGRESS
             const groupedByProgress = {};
             waterworksData.forEach(feature => {
@@ -1520,13 +1516,13 @@
                 }
                 groupedByProgress[progress].push(feature);
             });
-            
+
             // Sort progress groups
             const sortedGroups = Object.keys(groupedByProgress).sort();
-            
+
             sortedGroups.forEach(progress => {
                 const projects = groupedByProgress[progress];
-                
+
                 // Create progress accordion item
                 const progressItem = document.createElement('div');
                 progressItem.className = 'nested-accordion-item';
@@ -1542,12 +1538,12 @@
                         <div class="projects-container"></div>
                     </div>
                 `;
-                
+
                 container.appendChild(progressItem);
-                
+
                 // Setup nested accordion event delegation
                 setupNestedAccordionEvents(progressItem);
-                
+
                 // Add project items
                 const projectsContainer = progressItem.querySelector('.projects-container');
                 projects.forEach(project => {
@@ -1555,7 +1551,7 @@
                     projectsContainer.appendChild(projectItem);
                 });
             });
-            
+
             // Setup project item click events (only if not already set up)
             if (!eventListenersSetup.waterworks) {
                 setupProjectItemEvents('waterworks');
@@ -1565,11 +1561,11 @@
 
         // Setup nested accordion events using event delegation
         function setupNestedAccordionEvents(container) {
-            container.addEventListener('click', function(e) {
+            container.addEventListener('click', function (e) {
                 const header = e.target.closest('.nested-accordion-header, .level3-accordion-header, .level4-accordion-header');
-                
+
                 if (!header) return;
-                
+
                 e.stopPropagation();
                 const content = header.nextElementSibling;
                 const isActive = header.classList.contains('active');
@@ -1577,7 +1573,7 @@
                 // Toggle current item
                 header.classList.toggle('active');
                 content.classList.toggle('active');
-                
+
                 // Rotate icon
                 const icon = header.querySelector('.fa-chevron-down');
                 if (isActive) {
@@ -1593,14 +1589,14 @@
             const containerId = type === 'planning' ? 'archSDPlanningList' : 'archSDConstructionList';
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            
+
             const data = type === 'planning' ? archSDPlanningData : archSDConstructionData;
-            
+
             if (data.length === 0) {
                 container.innerHTML = `<div class="empty-state"><i class="fas fa-hard-hat"></i><p>沒有找到建築署${type === 'planning' ? '規劃中' : '興建中'}工程項目</p></div>`;
                 return;
             }
-            
+
             // Group data by locationCht -> projectTypeCht -> buildingTypeCht -> estimatedProjectCost
             const groupedData = {};
             data.forEach(feature => {
@@ -1609,21 +1605,21 @@
                 const projectType = props.projectTypeCht || '未分類';
                 const buildingType = props.buildingTypeCht || '未分類';
                 const cost = props.estimatedProjectCost || '未分類';
-                
+
                 if (!groupedData[location]) groupedData[location] = {};
                 if (!groupedData[location][projectType]) groupedData[location][projectType] = {};
                 if (!groupedData[location][projectType][buildingType]) groupedData[location][projectType][buildingType] = {};
                 if (!groupedData[location][projectType][buildingType][cost]) groupedData[location][projectType][buildingType][cost] = [];
-                
+
                 groupedData[location][projectType][buildingType][cost].push(feature);
             });
-            
+
             // Sort locations
             const sortedLocations = Object.keys(groupedData).sort();
-            
+
             sortedLocations.forEach(location => {
                 const locationData = groupedData[location];
-                
+
                 // Create location accordion item
                 const locationItem = document.createElement('div');
                 locationItem.className = 'nested-accordion-item';
@@ -1636,17 +1632,17 @@
                         <div class="location-content"></div>
                     </div>
                 `;
-                
+
                 container.appendChild(locationItem);
-                
+
                 // Setup nested accordion events
                 setupNestedAccordionEvents(locationItem);
-                
+
                 // Add project type content
                 const locationContent = locationItem.querySelector('.location-content');
                 renderArchSDProjectTypes(locationData, locationContent, type);
             });
-            
+
             // Setup project item click events (only if not already set up)
             const dataType = type === 'planning' ? 'archsdPlanning' : 'archsdConstruction';
             if (!eventListenersSetup[dataType]) {
@@ -1659,10 +1655,10 @@
         function renderArchSDProjectTypes(locationData, container, type) {
             // Sort project types
             const sortedProjectTypes = Object.keys(locationData).sort();
-            
+
             sortedProjectTypes.forEach(projectType => {
                 const projectTypeData = locationData[projectType];
-                
+
                 // Create project type accordion item
                 const projectTypeItem = document.createElement('div');
                 projectTypeItem.className = 'level3-accordion-item';
@@ -1675,12 +1671,12 @@
                         <div class="project-type-content"></div>
                     </div>
                 `;
-                
+
                 container.appendChild(projectTypeItem);
-                
+
                 // Setup nested accordion events
                 setupNestedAccordionEvents(projectTypeItem);
-                
+
                 // Add building type content
                 const projectTypeContent = projectTypeItem.querySelector('.project-type-content');
                 renderArchSDBuildingTypes(projectTypeData, projectTypeContent, type);
@@ -1691,10 +1687,10 @@
         function renderArchSDBuildingTypes(projectTypeData, container, type) {
             // Sort building types
             const sortedBuildingTypes = Object.keys(projectTypeData).sort();
-            
+
             sortedBuildingTypes.forEach(buildingType => {
                 const buildingTypeData = projectTypeData[buildingType];
-                
+
                 // Create building type accordion item
                 const buildingTypeItem = document.createElement('div');
                 buildingTypeItem.className = 'level4-accordion-item';
@@ -1707,12 +1703,12 @@
                         <div class="building-type-content"></div>
                     </div>
                 `;
-                
+
                 container.appendChild(buildingTypeItem);
-                
+
                 // Setup nested accordion events
                 setupNestedAccordionEvents(buildingTypeItem);
-                
+
                 // Add cost content
                 const buildingTypeContent = buildingTypeItem.querySelector('.building-type-content');
                 renderArchSDCosts(buildingTypeData, buildingTypeContent, type);
@@ -1723,10 +1719,10 @@
         function renderArchSDCosts(buildingTypeData, container, type) {
             // Sort cost categories
             const sortedCosts = Object.keys(buildingTypeData).sort();
-            
+
             sortedCosts.forEach(cost => {
                 const projects = buildingTypeData[cost];
-                
+
                 // Create cost section
                 const costSection = document.createElement('div');
                 costSection.className = 'cost-section';
@@ -1737,13 +1733,13 @@
                     </div>
                     <div class="projects-container"></div>
                 `;
-                
+
                 container.appendChild(costSection);
-                
+
                 // Add project items
                 const projectsContainer = costSection.querySelector('.projects-container');
                 projects.forEach(project => {
-                    const projectItem = type === 'planning' 
+                    const projectItem = type === 'planning'
                         ? createArchSDPlanningProjectItem(project)
                         : createArchSDConstructionProjectItem(project);
                     projectsContainer.appendChild(projectItem);
@@ -1755,12 +1751,12 @@
         function renderCEDDList() {
             const container = document.getElementById('ceddList');
             container.innerHTML = '';
-            
+
             if (ceddData.length === 0) {
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-mountain"></i><p>沒有找到土木工程拓展署工程項目</p></div>';
                 return;
             }
-            
+
             // Group by CategoryID
             const groupedByCategory = {};
             ceddData.forEach(feature => {
@@ -1770,13 +1766,13 @@
                 }
                 groupedByCategory[category].push(feature);
             });
-            
+
             // Sort categories
             const sortedCategories = Object.keys(groupedByCategory).sort();
-            
+
             sortedCategories.forEach(category => {
                 const projects = groupedByCategory[category];
-                
+
                 // Create category accordion item
                 const categoryItem = document.createElement('div');
                 categoryItem.className = 'nested-accordion-item';
@@ -1792,12 +1788,12 @@
                         <div class="projects-container"></div>
                     </div>
                 `;
-                
+
                 container.appendChild(categoryItem);
-                
+
                 // Setup nested accordion events
                 setupNestedAccordionEvents(categoryItem);
-                
+
                 // Add project items
                 const projectsContainer = categoryItem.querySelector('.projects-container');
                 projects.forEach(project => {
@@ -1805,7 +1801,7 @@
                     projectsContainer.appendChild(projectItem);
                 });
             });
-            
+
             // Setup project item click events (only if not already set up)
             if (!eventListenersSetup.cedd) {
                 setupProjectItemEvents('cedd');
@@ -1820,10 +1816,10 @@
             projectItem.className = 'project-item';
             projectItem.dataset.gmlId = props.GmlID;
             projectItem.dataset.dataType = 'waterworks';
-            
+
             // Get status badge
             const statusBadge = getStatusBadge(props.PROGRESS);
-            
+
             projectItem.innerHTML = `
                 <div class="project-name">
                     ${statusBadge}
@@ -1840,7 +1836,7 @@
                     </div>
                 </div>
             `;
-            
+
             return projectItem;
         }
 
@@ -1851,7 +1847,7 @@
             projectItem.className = 'project-item';
             projectItem.dataset.gmlId = props.GmlID;
             projectItem.dataset.dataType = 'archsdPlanning';
-            
+
             projectItem.innerHTML = `
                 <div class="project-name">
                     ${props.projectTitleCht || props.projectTitle || '未命名項目'}
@@ -1875,7 +1871,7 @@
                     </div>
                 </div>
             `;
-            
+
             return projectItem;
         }
 
@@ -1886,7 +1882,7 @@
             projectItem.className = 'project-item';
             projectItem.dataset.gmlId = props.GmlID;
             projectItem.dataset.dataType = 'archsdConstruction';
-            
+
             projectItem.innerHTML = `
                 <div class="project-name">
                     ${props.projectTitleCht || props.projectTitle || '未命名項目'}
@@ -1910,7 +1906,7 @@
                     </div>
                 </div>
             `;
-            
+
             return projectItem;
         }
 
@@ -1921,10 +1917,10 @@
             projectItem.className = 'project-item';
             projectItem.dataset.gmlId = props.GmlID;
             projectItem.dataset.dataType = 'cedd';
-            
+
             // Get status badge
             const statusBadge = getCategoryBadge(props.CategoryID);
-            
+
             projectItem.innerHTML = `
                 <div class="project-name">
                     ${statusBadge}
@@ -1941,32 +1937,32 @@
                     </div>
                 </div>
             `;
-            
+
             return projectItem;
         }
 
         // Setup project item click events - FIXED: Use event delegation
         function setupProjectItemEvents(dataType) {
             // Use event delegation on the document level
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 const projectItem = e.target.closest(`.project-item[data-data-type="${dataType}"]`);
                 if (!projectItem) return;
-                
+
                 e.stopPropagation();
-                
+
                 // Remove active class from all project items of same data type
                 document.querySelectorAll(`.project-item[data-data-type="${dataType}"]`).forEach(i => {
                     i.classList.remove('active');
                 });
-                
+
                 // Add active class to clicked item
                 projectItem.classList.add('active');
-                
+
                 // Find and select the corresponding feature
                 const gmlId = projectItem.dataset.gmlId;
                 let feature;
-                
-                switch(dataType) {
+
+                switch (dataType) {
                     case 'waterworks':
                         feature = waterworksData.find(f => f.properties.GmlID === gmlId);
                         break;
@@ -1980,7 +1976,7 @@
                         feature = ceddData.find(f => f.properties.GmlID === gmlId);
                         break;
                 }
-                
+
                 if (feature) {
                     selectFeature(feature, dataType);
                 }
@@ -1991,10 +1987,10 @@
         function createMapFeatures(features, dataType, color) {
             // Clear existing features for this data type
             allLayers[dataType].clearLayers();
-            
+
             features.forEach(feature => {
                 let layer;
-                
+
                 if (feature.geometry.type === 'Point') {
                     const coords = feature.geometry.coordinates;
                     layer = L.circleMarker([coords[1], coords[0]], {
@@ -2013,7 +2009,7 @@
                             return ring.map(coord => [coord[1], coord[0]]);
                         });
                     });
-                    
+
                     layer = L.polygon(polygons.flat(), {
                         color: color,
                         fillColor: color,
@@ -2021,17 +2017,17 @@
                         weight: 2
                     });
                 }
-                
+
                 if (layer) {
                     // Add popup
                     const popupContent = createPopupContent(feature, dataType);
                     layer.bindPopup(popupContent);
-                    
+
                     // Add click event - use named function to prevent duplicate binding
                     layer.off('click'); // Remove existing listeners
                     layer.on('click', function () {
                         selectFeature(feature, dataType);
-                        
+
                         // Find and highlight the corresponding list item
                         document.querySelectorAll('.project-item').forEach(item => {
                             item.classList.remove('active');
@@ -2041,7 +2037,7 @@
                             }
                         });
                     });
-                    
+
                     allLayers[dataType].addLayer(layer);
                 }
             });
@@ -2050,13 +2046,13 @@
         // Select and highlight a feature
         function selectFeature(feature, dataType) {
             const props = feature.properties;
-            
+
             // Clear previous selection
             if (selectedFeature) {
                 map.removeLayer(selectedFeature);
                 selectedFeature = null;
             }
-            
+
             // Create highlighted feature based on geometry type
             if (feature.geometry.type === 'Point') {
                 const coords = feature.geometry.coordinates;
@@ -2068,7 +2064,7 @@
                     opacity: 1,
                     fillOpacity: 0.9
                 }).addTo(map);
-                
+
                 // Pan to the selected feature
                 map.setView([coords[1], coords[0]], 14);
             } else if (feature.geometry.type === 'MultiPolygon') {
@@ -2079,25 +2075,25 @@
                         return ring.map(coord => [coord[1], coord[0]]);
                     });
                 });
-                
+
                 selectedFeature = L.polygon(polygons.flat(), {
                     color: '#ffcc00',
                     fillColor: '#ffcc00',
                     fillOpacity: 0.5,
                     weight: 3
                 }).addTo(map);
-                
+
                 // Fit bounds to the polygon
                 const bounds = selectedFeature.getBounds();
                 map.fitBounds(bounds);
             }
-            
+
             // Create popup content
             const popupContent = createPopupContent(feature, dataType);
-            
+
             // Open popup
             selectedFeature.bindPopup(popupContent).openPopup();
-            
+
             // Show notification
             const projectName = getProjectName(feature, dataType);
             showNotification(`已選取: ${projectName}`);
@@ -2107,8 +2103,8 @@
         function createPopupContent(feature, dataType) {
             const props = feature.properties;
             let content = `<div style="max-width: 300px;">`;
-            
-            switch(dataType) {
+
+            switch (dataType) {
                 case 'waterworks':
                     content += `
                         <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
@@ -2119,7 +2115,7 @@
                         <div><strong>項目編號:</strong> ${props.ITEM || 'N/A'}</div>
                     `;
                     break;
-                    
+
                 case 'archsdPlanning':
                     content += `
                         <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
@@ -2135,7 +2131,7 @@
                         <div><strong>預計完成:</strong> ${props.scheduledProjectCompletion || 'N/A'}</div>
                     `;
                     break;
-                    
+
                 case 'archsdConstruction':
                     content += `
                         <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
@@ -2151,7 +2147,7 @@
                         <div><strong>預計完成:</strong> ${props.scheduledProjectCompletion || 'N/A'}</div>
                     `;
                     break;
-                    
+
                 case 'cedd':
                     content += `
                         <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
@@ -2163,7 +2159,7 @@
                         <div><strong>緯度:</strong> ${props.Latitude || 'N/A'}</div>
                     `;
                     break;
-                    
+
                 case 'roadworks':
                     content += `
                         <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 1.1em">
@@ -2173,7 +2169,7 @@
                     `;
                     break;
             }
-            
+
             content += `</div>`;
             return content;
         }
@@ -2181,14 +2177,14 @@
         // Filter functions
         function filterWaterworksProjects(searchTerm) {
             const searchLower = searchTerm.toLowerCase().trim();
-            
+
             document.querySelectorAll('.project-item[data-data-type="waterworks"]').forEach(item => {
                 const projectName = item.querySelector('.project-name').textContent.toLowerCase();
                 const projectDetails = item.querySelector('.project-details').textContent.toLowerCase();
-                
+
                 if (!searchLower || projectName.includes(searchLower) || projectDetails.includes(searchLower)) {
                     item.style.display = 'block';
-                    
+
                     // Ensure parent accordions are expanded
                     expandParentAccordions(item);
                 } else {
@@ -2200,14 +2196,14 @@
         function filterArchSDProjects(searchTerm, type) {
             const searchLower = searchTerm.toLowerCase().trim();
             const dataType = type === 'planning' ? 'archsdPlanning' : 'archsdConstruction';
-            
+
             document.querySelectorAll(`.project-item[data-data-type="${dataType}"]`).forEach(item => {
                 const projectName = item.querySelector('.project-name').textContent.toLowerCase();
                 const projectDetails = item.querySelector('.project-details').textContent.toLowerCase();
-                
+
                 if (!searchLower || projectName.includes(searchLower) || projectDetails.includes(searchLower)) {
                     item.style.display = 'block';
-                    
+
                     // Ensure parent accordions are expanded
                     expandParentAccordions(item);
                 } else {
@@ -2219,12 +2215,12 @@
         function filterArchSDByLocation(location, type) {
             const containerId = type === 'planning' ? 'archSDPlanningList' : 'archSDConstructionList';
             const container = document.getElementById(containerId);
-            
+
             if (container) {
                 container.querySelectorAll('.nested-accordion-item').forEach(accordion => {
                     const header = accordion.querySelector('.nested-accordion-header');
                     const locationName = header.textContent.replace(/[\s\d]/g, ''); // Remove counters and whitespace
-                    
+
                     if (!location || locationName === location) {
                         accordion.style.display = 'block';
                     } else {
@@ -2236,14 +2232,14 @@
 
         function filterCEDDProjects(searchTerm) {
             const searchLower = searchTerm.toLowerCase().trim();
-            
+
             document.querySelectorAll('.project-item[data-data-type="cedd"]').forEach(item => {
                 const projectName = item.querySelector('.project-name').textContent.toLowerCase();
                 const projectDetails = item.querySelector('.project-details').textContent.toLowerCase();
-                
+
                 if (!searchLower || projectName.includes(searchLower) || projectDetails.includes(searchLower)) {
                     item.style.display = 'block';
-                    
+
                     // Ensure parent accordions are expanded
                     expandParentAccordions(item);
                 } else {
@@ -2254,13 +2250,13 @@
 
         function filterCEDDByCategory(category) {
             const container = document.getElementById('ceddList');
-            
+
             if (container) {
                 container.querySelectorAll('.nested-accordion-item').forEach(accordion => {
                     const header = accordion.querySelector('.nested-accordion-header');
                     const categoryName = getCategoryName(category);
                     const headerText = header.textContent.replace(/[\s\d]/g, ''); // Remove counters and whitespace
-                    
+
                     if (!category || headerText === categoryName) {
                         accordion.style.display = 'block';
                     } else {
@@ -2274,7 +2270,7 @@
         function expandParentAccordions(item) {
             let parent = item.parentElement;
             while (parent) {
-                if (parent.classList.contains('nested-accordion-content') || 
+                if (parent.classList.contains('nested-accordion-content') ||
                     parent.classList.contains('level3-accordion-content') ||
                     parent.classList.contains('level4-accordion-content')) {
                     const header = parent.previousElementSibling;
@@ -2293,7 +2289,7 @@
 
         // Helper functions
         function getProgressName(progress) {
-            switch(progress) {
+            switch (progress) {
                 case 'C':
                     return '已完成';
                 case 'UP':
@@ -2308,8 +2304,8 @@
         function getStatusBadge(progress) {
             let badgeClass = 'status-inprogress';
             let badgeText = getProgressName(progress);
-            
-            switch(progress) {
+
+            switch (progress) {
                 case 'C':
                     badgeClass = 'status-completed';
                     break;
@@ -2320,12 +2316,12 @@
                     badgeClass = 'status-inprogress';
                     break;
             }
-            
+
             return `<span class="status-badge ${badgeClass}">${badgeText}</span>`;
         }
 
         function getCategoryName(category) {
-            switch(category) {
+            switch (category) {
                 case 'Completed':
                     return '已完成';
                 case 'InProgress':
@@ -2340,8 +2336,8 @@
         function getCategoryBadge(category) {
             let badgeClass = 'status-inprogress';
             let badgeText = getCategoryName(category);
-            
-            switch(category) {
+
+            switch (category) {
                 case 'Completed':
                     badgeClass = 'status-completed';
                     break;
@@ -2352,14 +2348,14 @@
                     badgeClass = 'status-planned';
                     break;
             }
-            
+
             return `<span class="status-badge ${badgeClass}">${badgeText}</span>`;
         }
 
         function getProjectName(feature, dataType) {
             const props = feature.properties;
-            
-            switch(dataType) {
+
+            switch (dataType) {
                 case 'waterworks':
                     return props.PROJECT || '未命名項目';
                 case 'archsdPlanning':
